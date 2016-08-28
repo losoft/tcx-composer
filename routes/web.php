@@ -14,3 +14,9 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('news', '\App\Http\Controllers\NewsController@news');
+
+Route::get('workouts', '\App\Http\Controllers\WorkoutController@workouts');
+
+Route::get('merge', '\App\Http\Controllers\MergeController@merge');
