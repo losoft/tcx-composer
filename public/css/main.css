@@ -1,0 +1,31 @@
+div {
+    display: block;
+}
+
+header {
+    display: block;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    min-height: 50px;
+}
+
+footer {
+    display: block;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    margin-top: 40px;
+    border-top: 1px solid #eee;
+}
+
+section.page-content {
+    min-height: 425px;
+}
+
+div.page-content {
+    max-width: 1280px;
+}
+
+.nav-btn-upload {
+    padding-left: 25px;
+    padding-top: 10px;
+}
