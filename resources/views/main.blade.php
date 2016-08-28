@@ -6,7 +6,7 @@
     <meta content="Jan Komadowski" name="copyright"/>
     <meta content="Jan Komadowski" name="author"/>
     <meta name="description"
-          content="TCX Composer allows you to merge, crop, split or concat two or more workout files">
+          content="TCX Composer helps to crop, split or merge workout files">
 
     <link rel="stylesheet" href="{{ url('/css/main.css') }}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
