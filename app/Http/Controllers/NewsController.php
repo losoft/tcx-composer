@@ -11,7 +11,6 @@ class NewsController extends Controller
     public function news()
     {
         $data = array(
-            'path' => '/news'
         );
         return view('news', $data);
     }

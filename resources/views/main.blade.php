@@ -8,7 +8,7 @@
     <meta name="description"
           content="TCX Composer allows you to merge, crop, split or concat two or more workout files">
 
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="{{ url('/css/main.css') }}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
           integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
@@ -27,23 +27,24 @@
     <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
-                <a class="navbar-brand" href="/">TCX Composer</a>
+                <a class="navbar-brand" href="{{ url('/') }}">TCX Composer</a>
             </div>
             <div id="navbar">
                 <ul class="nav navbar-nav">
-                    <li @if($path == '/news')class="active"@endif><a href="/news">News</a></li>
-                    <li @if($path == '/workouts')class="active"@endif><a href="/workouts">Workouts</a></li>
-                    <li @if($path == '/merge')class="active"@endif><a href="/merge">Merge</a></li>
+                    <li @if(Request::is('news'))class="active"@endif><a href="{{ url('/news') }}">News</a></li>
+                    <li @if(Request::is('workouts'))class="active"@endif><a href="{{ url('/workouts') }}">Workouts</a></li>
+                    <li @if(Request::is('merge'))class="active"@endif><a href="{{ url('/merge') }}">Merge</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                           aria-haspopup="true"
                            aria-expanded="false">Profile <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="/profile">View Profile</a></li>
-                            <li><a href="/settings">Settings</a></li>
+                            <li><a href="{{ url('/profile') }}">View Profile</a></li>
+                            <li><a href="{{ url('/settings') }}">Settings</a></li>
                             <li role="separator" class="divider"></li>
-                            <li><a href="/auth/login">Login</a></li>
+                            <li><a href="{{ url('/auth/login') }}">Login</a></li>
                         </ul>
                     </li>
                 </ul>

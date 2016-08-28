@@ -11,7 +11,6 @@ class MainController extends Controller
     public function welcome()
     {
         $data = array(
-            'path' => '/welcome'
         );
         return view('welcome', $data);
     }

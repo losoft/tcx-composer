@@ -12,7 +12,6 @@ class WorkoutController extends Controller
     public function workouts()
     {
         $data = array(
-            'path' => '/workouts',
             'workouts' => Workout::all()
         );
         return view('workouts', $data);

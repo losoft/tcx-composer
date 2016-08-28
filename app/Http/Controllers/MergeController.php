@@ -11,7 +11,6 @@ class MergeController extends Controller
     public function merge()
     {
         $data = array(
-            'path' => '/merge'
         );
         return view('merge', $data);
     }
