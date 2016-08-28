@@ -16,5 +16,7 @@ Route::get('/', '\App\Http\Controllers\MainController@welcome');
 Route::get('news', '\App\Http\Controllers\NewsController@news');
 
 Route::get('workouts', '\App\Http\Controllers\WorkoutController@workouts');
+Route::get('workouts/upload', '\App\Http\Controllers\WorkoutController@upload');
+Route::post('workouts/upload', '\App\Http\Controllers\WorkoutController@uploaded');
 
 Route::get('merge', '\App\Http\Controllers\MergeController@merge');

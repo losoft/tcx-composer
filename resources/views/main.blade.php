@@ -32,7 +32,7 @@
             <div id="navbar">
                 <ul class="nav navbar-nav">
                     <li @if(Request::is('news'))class="active"@endif><a href="{{ url('/news') }}">News</a></li>
-                    <li @if(Request::is('workouts'))class="active"@endif><a href="{{ url('/workouts') }}">Workouts</a></li>
+                    <li @if(Request::is('workouts*'))class="active"@endif><a href="{{ url('/workouts') }}">Workouts</a></li>
                     <li @if(Request::is('merge'))class="active"@endif><a href="{{ url('/merge') }}">Merge</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">

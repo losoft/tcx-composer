@@ -2,9 +2,11 @@ DROP TABLE workouts;
 
 CREATE TABLE workouts (
   id varchar(36) NOT NULL,
-  creation_timestamp datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   name varchar(128) DEFAULT 'undefined' NOT NULL,
-  track blob, PRIMARY KEY (id)
+  track LONGTEXT,
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf16;
 
 INSERT INTO workouts (id, name) VALUES ('10297fff-c48c-4782-a475-c98e7bf7a8fd', 'Polar A360 track');
