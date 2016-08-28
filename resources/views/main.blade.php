@@ -58,7 +58,7 @@
         @yield('page-content')
     </section>
     <footer class="footer">
-        <p>Copyright © 2016 Workout Merge</p>
+        <p>Copyright © 2016 TCX Composer</p>
     </footer>
 </div>
 </body>
