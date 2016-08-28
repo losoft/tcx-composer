@@ -6,13 +6,13 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 
-class MergeController extends Controller
+class MainController extends Controller
 {
-    public function merge()
+    public function welcome()
     {
         $data = array(
-            'path' => '/merge'
+            'path' => '/welcome'
         );
-        return view('merge', $data);
+        return view('welcome', $data);
     }
 }

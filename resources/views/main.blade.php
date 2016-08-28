@@ -6,7 +6,7 @@
     <meta content="Jan Komadowski" name="copyright"/>
     <meta content="Jan Komadowski" name="author"/>
     <meta name="description"
-          content="Workout Merge allows you to merge, crop, split or concat two or more workout files">
+          content="TCX Composer allows you to merge, crop, split or concat two or more workout files">
 
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
@@ -19,6 +19,7 @@
             integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
             crossorigin="anonymous"></script>
 
+    @yield('head')
     @yield('page-title')
 </head>
 <body>
@@ -26,7 +27,7 @@
     <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
-                <a class="navbar-brand" href="#">Workout Merge</a>
+                <a class="navbar-brand" href="/">TCX Composer</a>
             </div>
             <div id="navbar">
                 <ul class="nav navbar-nav">

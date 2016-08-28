@@ -1,7 +1,7 @@
 @extends('main')
 
 @section('page-title')
-    <title>Workout Merge - Merge</title>
+    <title>TCX Composer - Merge</title>
 @endsection
 
 @section('page-content')

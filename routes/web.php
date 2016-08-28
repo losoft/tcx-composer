@@ -11,9 +11,7 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', '\App\Http\Controllers\MainController@welcome');
 
 Route::get('news', '\App\Http\Controllers\NewsController@news');
 
