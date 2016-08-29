@@ -1,16 +1,16 @@
-@extends('main')
+@extends('layouts.app')
 
-@section('page-title')
+@section('title')
     <title>TCX Composer - Workouts - Uploaded</title>
 @endsection
 
-@section('page-content')
-    <div class="page-content">
+@section('content')
+    <div class="container">
         @if($status == 'SUCCESS')
-            <h1 class="page-header" id="news">Workout upload was successful</h1>
+            <h2 class="page-header">Workout upload was successful</h2>
         @endif
         @if($status == 'FAILED')
-            <h1 class="page-header" id="news">Workout upload has failed</h1>
+            <h2 class="page-header">Workout upload has failed</h2>
         @endif
 
         <?php print_r($workout); ?>
