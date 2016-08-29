@@ -6,6 +6,7 @@ use App\Workout;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\Auth;
 use Ramsey\Uuid\Uuid;
 
 class WorkoutController extends Controller
@@ -33,6 +34,7 @@ class WorkoutController extends Controller
         $workout->id = Uuid::uuid4();
         $workout->name = $request->get('name');
         $workout->track = file_get_contents($request->file('tcx')->getRealPath());
+        $workout->user = Auth::guest() ? 0 : Auth::user()->id;
 
         $status = 'FAILED';
         if (WorkoutController::validateWorkout($workout) == true) {
