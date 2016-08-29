@@ -1,12 +1,12 @@
-@extends('main')
+@extends('layouts.app')
 
-@section('page-title')
+@section('title')
     <title>TCX Composer - Workouts - Upload</title>
 @endsection
 
-@section('page-content')
-    <div class="page-content">
-        <h1 class="page-header" id="news">Upload a new workout file</h1>
+@section('content')
+    <div class="container">
+        <h2 class="page-header">Upload a new workout file</h2>
         {!! Form::open(array('url' => url('/workouts/upload'), 'method' => 'post', 'files' => true, 'class' => 'form-horizontal')) !!}
         <div class="form-group">
             {!! Form::label('name', 'Workout name:', array('class' =>'control-label col-sm-2')) !!}

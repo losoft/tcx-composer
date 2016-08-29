@@ -1,4 +1,4 @@
-@extends('main')
+@extends('layouts.app')
 
 @section('head')
     <!-- Fonts -->
@@ -9,6 +9,7 @@
         .welcome {
             padding-top: 100px;
             text-align: center;
+            padding-bottom: 100px;
         }
 
         .welcome a {
@@ -35,12 +36,12 @@
     </style>
 @endsection
 
-@section('page-title')
+@section('title')
     <title>TCX Composer</title>
 @endsection
 
-@section('page-content')
-    <div class="page-content">
+@section('content')
+    <div class="container">
         <div class="welcome">
             <div class="title m-b-md">
                 TCX Composer

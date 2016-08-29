@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@section('title')
+    <title>TCX Composer - Reset Password</title>
+@endsection
+
 @section('content')
 <div class="container">
     <div class="row">

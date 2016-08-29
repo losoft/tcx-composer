@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@section('title')
+    <title>TCX Composer - Login</title>
+@endsection
+
 @section('content')
 <div class="container">
     <div class="row">
