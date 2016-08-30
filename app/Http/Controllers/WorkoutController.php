@@ -11,7 +11,15 @@ use Ramsey\Uuid\Uuid;
 
 class WorkoutController extends Controller
 {
-    public $timestamps = false;
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
 
     public function workouts()
     {
@@ -34,7 +42,7 @@ class WorkoutController extends Controller
         $workout->id = Uuid::uuid4();
         $workout->name = $request->get('name');
         $workout->track = file_get_contents($request->file('tcx')->getRealPath());
-        $workout->user = Auth::guest() ? 0 : Auth::user()->id;
+        $workout->user = Auth::user()->id;
 
         $status = 'FAILED';
         if (WorkoutController::validateWorkout($workout) == true) {
