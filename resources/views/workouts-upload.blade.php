@@ -7,11 +7,16 @@
 @section('content')
     <div class="container">
         <h2 class="page-header">Upload a new workout file</h2>
+        @if($status == 'FAILED')
+            <div class="alert alert-danger" role="alert">
+                <strong>Please correct your data: </strong> {{ $validation }}
+            </div>
+        @endif
         {!! Form::open(array('url' => url('/workouts/upload'), 'method' => 'post', 'files' => true, 'class' => 'form-horizontal')) !!}
         <div class="form-group">
             {!! Form::label('name', 'Workout name:', array('class' =>'control-label col-sm-2')) !!}
             <div class="col-sm-10">
-                {!! Form::text('name', 'Enter workout name', array('class' =>'form-control')) !!}
+                {!! Form::text('name', $name, array('class' => 'form-control', 'placeholder' => 'Enter workout name')) !!}
             </div>
         </div>
         <div class="form-group">
