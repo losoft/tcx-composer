@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\TrackPoint;
 use App\Workout;
+use App\WorkoutDetails;
 use App\WorkoutSummary;
 use DateTime;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 use Ramsey\Uuid\Uuid;
 
 class WorkoutController extends Controller
@@ -27,7 +30,6 @@ class WorkoutController extends Controller
     {
         $workouts = Workout::where('user', '=', Auth::user()->id)->get();
         $workoutsSummary = array();
-        $i = 0;
         foreach ($workouts as $workout) {
             $workoutsSummary[] = self::workoutSummary($workout);
         }
@@ -70,9 +72,24 @@ class WorkoutController extends Controller
 
     public function show($id)
     {
-        return view('workouts.show', ['workout' => Workout::findOrFail($id)]);
+        $workout = Workout::where([
+            ['id', '=', $id],
+            ['user', '=', Auth::user()->id]
+        ])->first();
+        if ($workout == null) {
+            return Response::view('error-404', array(), 404);
+        }
+        $workoutDetails = self::workoutDetails($workout);
+        $data = array(
+            'workout' => $workoutDetails
+        );
+        return view('workouts-show', $data);
     }
 
+    /**
+     * @param $request
+     * @return Workout
+     */
     public static function workoutFromRequest($request)
     {
         $workout = new Workout();
@@ -84,6 +101,10 @@ class WorkoutController extends Controller
         return $workout;
     }
 
+    /**
+     * @param $workout
+     * @return object
+     */
     public static function validateWorkout($workout)
     {
         $report = (object)array(
@@ -97,6 +118,10 @@ class WorkoutController extends Controller
         return $report;
     }
 
+    /**
+     * @param $name
+     * @return string
+     */
     public static function validateName($name)
     {
         if (empty($name)) {
@@ -111,6 +136,10 @@ class WorkoutController extends Controller
         return '';
     }
 
+    /**
+     * @param $track
+     * @return string
+     */
     public static function validateTrack($track)
     {
         if (empty($track)) {
@@ -149,13 +178,63 @@ class WorkoutController extends Controller
         $averageHeartRate = (int)$xml->Activities->Activity->Lap->AverageHeartRateBpm->Value;
         $maximumHeartRate = (int)$xml->Activities->Activity->Lap->MaximumHeartRateBpm->Value;
         $calories = (int)$xml->Activities->Activity->Lap->Calories;
-        $summary = new WorkoutSummary($workout->name, $type, $startTime, $duration, $calories, $distance, $speed, $pace,
+
+        $result = new WorkoutSummary($workout->name, $type, $startTime, $duration, $calories, $distance, $speed, $pace,
             $averageHeartRate, $maximumHeartRate);
-        return $summary;
+
+        return $result;
+    }
+
+    /**
+     * @param $workout
+     * @return WorkoutDetails
+     */
+    public static function workoutDetails($workout)
+    {
+        $xml = SimpleXML_Load_String($workout->track);
+        $type = (string)$xml->Activities->Activity['Sport'];
+        $startTime = self::normalizeISO8601((string)$xml->Activities->Activity->Lap['StartTime']);
+        $duration = (float)$xml->Activities->Activity->Lap->TotalTimeSeconds;
+        $distance = (float)$xml->Activities->Activity->Lap->DistanceMeters;
+        // TODO: get the speed and pace from track data
+        $speed = 0;
+        $pace = 0;
+        $averageHeartRate = (int)$xml->Activities->Activity->Lap->AverageHeartRateBpm->Value;
+        $maximumHeartRate = (int)$xml->Activities->Activity->Lap->MaximumHeartRateBpm->Value;
+        $calories = (int)$xml->Activities->Activity->Lap->Calories;
+
+        $result = new WorkoutDetails($workout->name, $type, $startTime, $duration, $calories, $distance, $speed, $pace,
+            $averageHeartRate, $maximumHeartRate);
+
+        $xmlTrackPoints = $xml->Activities->Activity->Lap->Track->children();
+        foreach ($xmlTrackPoints as $xmlTrackPoint) {
+            $trackPoint = self::workoutTrackPoint($xmlTrackPoint);
+            $result->add($trackPoint);
+        }
+
+        return $result;
+    }
+
+    private static function workoutTrackPoint($xmlTrackPoint)
+    {
+        $time = (string)$xmlTrackPoint->Time;
+        $distanceMeters = (float)$xmlTrackPoint->DistanceMeters;
+        $heartRateBpm = (int)$xmlTrackPoint->HeartRateBpm->Value;
+        $latitudeDegrees = (float)$xmlTrackPoint->Position->LatitudeDegrees;
+        $longitudeDegrees = (float)$xmlTrackPoint->Position->LongitudeDegrees;
+        $altitudeMeters = (int)$xmlTrackPoint->AltitudeMeters;
+        $sensorState = (string)$xmlTrackPoint->SensorState;
+
+        return new TrackPoint($time, $distanceMeters, $heartRateBpm, $latitudeDegrees,
+            $longitudeDegrees, $altitudeMeters, $sensorState);
     }
 
     const ISO8601U = 'Y-m-d\TH:i:s.uO';
 
+    /**
+     * @param $iso8601DateTime
+     * @return false|string
+     */
     private static function normalizeISO8601($iso8601DateTime)
     {
         // FIXME: check the time-zone and setup correct offset
