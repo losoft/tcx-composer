@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Workout;
+use App\WorkoutSummary;
+use DateTime;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -24,8 +26,13 @@ class WorkoutController extends Controller
     public function workouts()
     {
         $workouts = Workout::where('user', '=', Auth::user()->id)->get();
+        $workoutsSummary = array();
+        $i = 0;
+        foreach ($workouts as $workout) {
+            $workoutsSummary[] = self::workoutSummary($workout);
+        }
         $data = array(
-            'workouts' => $workouts
+            'workouts' => $workoutsSummary
         );
         return view('workouts', $data);
     }
@@ -47,18 +54,18 @@ class WorkoutController extends Controller
             'tcx' => $request->exists('tcx') ? $request->file('tcx')->getFilename() : ''
         );
 
-        $workout = WorkoutController::workoutFromRequest($request);
-        $report = WorkoutController::validateWorkout($workout);
+        $workout = self::workoutFromRequest($request);
+        $report = self::validateWorkout($workout);
         if ($report->valid) {
             $workout->save();
 
             $data->status = 'SUCCESS';
-            $data->workout = $workout;
-            return view('workouts-uploaded', (array) $data);
+            $data->workout = self::workoutSummary($workout);
+            return view('workouts-uploaded', (array)$data);
         }
         $data->validation = $report->validation;
         $data->status = 'FAILED';
-        return view('workouts-upload', (array) $data);
+        return view('workouts-upload', (array)$data);
     }
 
     public function show($id)
@@ -83,9 +90,9 @@ class WorkoutController extends Controller
             'validation' => '',
             'valid' => false
         );
-        $report->validation .= WorkoutController::validateName($workout->name);
+        $report->validation .= self::validateName($workout->name);
         $report->validation .= (!empty($report->validation) ? ' ' : '')
-            . WorkoutController::validateTrack($workout->track);
+            . self::validateTrack($workout->track);
         $report->valid = empty($report->validation) ? true : false;
         return $report;
     }
@@ -119,9 +126,43 @@ class WorkoutController extends Controller
                 return 'Training data does not contain any trackpoints.';
             }
             // TODO: read summary data and check if exists
-        } catch(\Exception $e){
+        } catch (\Exception $e) {
             return 'Training data is corrupted or has unsupported format.';
         }
         return '';
+    }
+
+    /**
+     * @param $workout
+     * @return WorkoutSummary
+     */
+    public static function workoutSummary($workout)
+    {
+        $xml = SimpleXML_Load_String($workout->track);
+        $type = (string)$xml->Activities->Activity['Sport'];
+        $startTime = self::normalizeISO8601((string)$xml->Activities->Activity->Lap['StartTime']);
+        $duration = (float)$xml->Activities->Activity->Lap->TotalTimeSeconds;
+        $distance = (float)$xml->Activities->Activity->Lap->DistanceMeters;
+        // TODO: get the speed and pace from track data
+        $speed = 0;
+        $pace = 0;
+        $averageHeartRate = (int)$xml->Activities->Activity->Lap->AverageHeartRateBpm->Value;
+        $maximumHeartRate = (int)$xml->Activities->Activity->Lap->MaximumHeartRateBpm->Value;
+        $calories = (int)$xml->Activities->Activity->Lap->Calories;
+        $summary = new WorkoutSummary($workout->name, $type, $startTime, $duration, $calories, $distance, $speed, $pace,
+            $averageHeartRate, $maximumHeartRate);
+        return $summary;
+    }
+
+    const ISO8601U = 'Y-m-d\TH:i:s.uO';
+
+    private static function normalizeISO8601($iso8601DateTime)
+    {
+        // FIXME: check the time-zone and setup correct offset
+        $dateTime = DateTime::createFromFormat(self::ISO8601U, $iso8601DateTime);
+        if ($dateTime !== false) {
+            return gmdate('Y-m-d\TH:i:s\Z', $dateTime->getTimestamp());
+        }
+        return $iso8601DateTime;
     }
 }
