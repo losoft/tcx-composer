@@ -10,6 +10,7 @@ namespace app;
 
 class WorkoutSummary
 {
+    public $id;
     public $name;
     public $type;
     public $startTime;
@@ -21,9 +22,10 @@ class WorkoutSummary
     public $averageHeartRate;
     public $maximumHeartRate;
 
-    public function __construct($name, $type, $startTime, $duration, $calories, $distance, $speed, $pace,
+    public function __construct($id, $name, $type, $startTime, $duration, $calories, $distance, $speed, $pace,
                                 $averageHeartRate, $maximumHeartRate)
     {
+        $this->id = $id;
         $this->name = $name;
         $this->type = $type;
         $this->startTime = $startTime;
