@@ -208,16 +208,17 @@ class WorkoutController extends Controller
 
         $xmlTrackPoints = $xml->Activities->Activity->Lap->Track->children();
         foreach ($xmlTrackPoints as $xmlTrackPoint) {
-            $trackPoint = self::workoutTrackPoint($xmlTrackPoint);
+            $trackPoint = self::workoutTrackPoint($xmlTrackPoint, $startTime);
             $result->add($trackPoint);
         }
 
         return $result;
     }
 
-    private static function workoutTrackPoint($xmlTrackPoint)
+    private static function workoutTrackPoint($xmlTrackPoint, $startTime = null)
     {
         $time = (string)$xmlTrackPoint->Time;
+        $duration = ($startTime == null) ? 0 : self::calculateDuration($startTime, $time);
         $distanceMeters = (float)$xmlTrackPoint->DistanceMeters;
         $heartRateBpm = (int)$xmlTrackPoint->HeartRateBpm->Value;
         $latitudeDegrees = (float)$xmlTrackPoint->Position->LatitudeDegrees;
@@ -225,7 +226,7 @@ class WorkoutController extends Controller
         $altitudeMeters = (int)$xmlTrackPoint->AltitudeMeters;
         $sensorState = (string)$xmlTrackPoint->SensorState;
 
-        return new TrackPoint($time, $distanceMeters, $heartRateBpm, $latitudeDegrees,
+        return new TrackPoint($time, $duration, $distanceMeters, $heartRateBpm, $latitudeDegrees,
             $longitudeDegrees, $altitudeMeters, $sensorState);
     }
 
@@ -243,5 +244,18 @@ class WorkoutController extends Controller
             return gmdate('Y-m-d\TH:i:s\Z', $dateTime->getTimestamp());
         }
         return $iso8601DateTime;
+    }
+
+    /**
+     * Calculates difference in seconds between two dates in ISO8601 format
+     * @param $startTime
+     * @param $endTime
+     * @return int
+     */
+    private static function calculateDuration($startTime, $endTime) {
+        $startTimeDate = DateTime::createFromFormat(DateTime::ISO8601, self::normalizeISO8601($startTime));
+        $endTimeDate = DateTime::createFromFormat(DateTime::ISO8601, self::normalizeISO8601($endTime));
+        $duration = $endTimeDate->getTimestamp() - $startTimeDate->getTimestamp();
+        return $duration;
     }
 }
