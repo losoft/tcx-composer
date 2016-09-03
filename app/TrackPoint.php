@@ -11,6 +11,7 @@ namespace app;
 class TrackPoint
 {
     public $time;
+    public $duration;
     public $distanceMeters;
     public $heartRateBpm;
     public $latitudeDegrees;
@@ -19,6 +20,7 @@ class TrackPoint
     public $sensorState;
 
     public function __construct($time,
+                                $duration,
                                 $distanceMeters,
                                 $heartRateBpm,
                                 $latitudeDegrees,
@@ -27,6 +29,7 @@ class TrackPoint
                                 $sensorState)
     {
         $this->time = $time;
+        $this->duration = $duration;
         $this->distanceMeters = $distanceMeters;
         $this->heartRateBpm = $heartRateBpm;
         $this->latitudeDegrees = $latitudeDegrees;

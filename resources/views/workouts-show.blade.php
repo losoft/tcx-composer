@@ -14,77 +14,73 @@
 @endsection
 
 @section('javascript')
+    <?php
+    function reduce($array, $size)
+    {
+        $count = count($array);
+        $offset = (int)$count / $size;
+        $part = 1;
+        $newArray = array();
+        $newArray[] = $array[0];
+        while ($part < $size) {
+            $newArray[] = $array[$offset * $part];
+            $part++;
+        }
+        $newArray[] = $array[$count - 1];
+        return $newArray;
+    }
+    ?>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         google.charts.load('current', {packages: ['corechart']});
-        google.charts.setOnLoadCallback(drawCrosshairs);
+        google.charts.setOnLoadCallback(drawDuration);
 
-        function drawCrosshairs() {
-            var data = new google.visualization.DataTable();
-            data.addColumn('datetime', 'Time');
-            data.addColumn('number', 'Distance');
-            data.addColumn('number', 'Altitude');
+        function drawDuration() {
+            var dataTable = new google.visualization.DataTable();
+            dataTable.addColumn('number', 'Duration');
+            dataTable.addColumn('number', 'Altitude');
+            dataTable.addColumn({type: 'string', role: 'tooltip', p: {'html': true}});
+            dataTable.addColumn('number', 'Heart Rate');
+            dataTable.addColumn({type: 'string', role: 'tooltip', p: {'html': true}});
 
-            data.addRows([
-                    <?php
-                    foreach ($workout->trackPoints as $trackPoint) {
-                        echo '['
-                                . 'new Date("' . $trackPoint->time . '")'
-                                . ', '
-                                . $trackPoint->distanceMeters
-                                . ', '
-                                . $trackPoint->altitudeMeters
-                                . '],';
-                    }
-
-                    ?>
+            dataTable.addRows([
+                <?php
+                foreach ($workout->trackPoints as $trackPoint) {
+                    $hms = gmdate("H:i:s", $trackPoint->duration);
+                    $html = "<p><b>Durration:</b> $hms</p>" .
+                            "<p><b>Altitude:</b> $trackPoint->altitudeMeters</p>" .
+                            "<p><b>Heart Rate:</b> $trackPoint->heartRateBpm</p>";
+                    echo "[$trackPoint->duration, $trackPoint->altitudeMeters, ".
+                            "'$html', $trackPoint->heartRateBpm, '$html' ],";
+                }
+                ?>
             ]);
 
-            var materialOptions = {
+            var options = {
                 chart: {
                     title: 'Analysis'
                 },
                 width: 1130,
                 height: 350,
-                series: {
-                    // Gives each series an axis name that matches the Y-axis below.
-                    0: {axis: 'Distance'},
-                    1: {axis: 'Altitude'}
-                },
                 hAxis: {
-                    format: 'HH:mm:ss'
-                }
+                    ticks: [
+                        <?php
+                        $ticks = reduce($workout->trackPoints, 7);
+                        foreach ($ticks as $trackPoint) {
+                            $hms = gmdate("H:i:s", $trackPoint->duration);
+                            echo "{ v: $trackPoint->duration, f: '$hms' },";
+                        }
+                        ?>
+                    ]
+                },
+                tooltip: {
+                    isHtml: true
+                },
             };
 
-            var classicOptions = {
-                title: 'Analysis',
-                width: 1130,
-                height: 350,
-                // Gives each series an axis that matches the vAxes number below.
-                series: {
-                    0: {targetAxisIndex: 0},
-                    1: {targetAxisIndex: 1}
-                },
-                vAxes: {
-                    // Adds titles to each axis.
-                    0: {title: 'Distance'},
-                    1: {title: 'Altitude'}
-                },
-                hAxis: {
-                    format: 'HH:mm:ss'
-                }
-            };
-
-            //var formatter = new google.visualization.DateFormat({pattern: 'HH:mm:ss'});
-            //formatter.format(data, 0);
             var chartDiv = document.getElementById('chart_div');
-            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-           //var materialChart = new google.charts.Line(chartDiv);
-            chart.draw(data, materialOptions);
-
-            //chart.draw(data, options);
-            //chart.setSelection([{row: 38, column: 1}]);
-
+            var chart = new google.visualization.LineChart(chartDiv);
+            chart.draw(dataTable, options);
         }
     </script>
 @endsection
