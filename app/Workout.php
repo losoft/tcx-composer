@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Workout extends Model
 {
+    public $incrementing = false;
+
     /**
      * The attributes that are mass assignable.
      *

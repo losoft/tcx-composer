@@ -35,7 +35,8 @@
             <tbody>
             @foreach($workouts as $workout)
                 <tr>
-                    <td class="text-left">{{ $workout->name }}</td>
+                    <td class="text-left"><a href="<?php echo url('/workouts/' . $workout->id) ?>">{{ $workout->name }}</a>
+                    </td>
                     <td class="text-left">{{ $workout->type }}</td>
                     <td class="text-left">{{ $workout->startTime }}</td>
                     <td class="text-right">{{ gmdate("H:i:s", $workout->duration) }}</td>

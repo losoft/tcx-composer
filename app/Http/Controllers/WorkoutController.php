@@ -93,7 +93,7 @@ class WorkoutController extends Controller
     public static function workoutFromRequest($request)
     {
         $workout = new Workout();
-        $workout->id = Uuid::uuid4();
+        $workout->id = Uuid::uuid4()->toString();
         $workout->name = $request->get('name');
         $workout->track = $request->exists('tcx') && $request->file('tcx')->isValid()
             ? file_get_contents($request->file('tcx')->getRealPath()) : '';
@@ -179,8 +179,8 @@ class WorkoutController extends Controller
         $maximumHeartRate = (int)$xml->Activities->Activity->Lap->MaximumHeartRateBpm->Value;
         $calories = (int)$xml->Activities->Activity->Lap->Calories;
 
-        $result = new WorkoutSummary($workout->name, $type, $startTime, $duration, $calories, $distance, $speed, $pace,
-            $averageHeartRate, $maximumHeartRate);
+        $result = new WorkoutSummary($workout->id, $workout->name, $type, $startTime, $duration, $calories,
+            $distance, $speed, $pace, $averageHeartRate, $maximumHeartRate);
 
         return $result;
     }
@@ -203,8 +203,8 @@ class WorkoutController extends Controller
         $maximumHeartRate = (int)$xml->Activities->Activity->Lap->MaximumHeartRateBpm->Value;
         $calories = (int)$xml->Activities->Activity->Lap->Calories;
 
-        $result = new WorkoutDetails($workout->name, $type, $startTime, $duration, $calories, $distance, $speed, $pace,
-            $averageHeartRate, $maximumHeartRate);
+        $result = new WorkoutDetails($workout->id, $workout->name, $type, $startTime, $duration, $calories,
+            $distance, $speed, $pace, $averageHeartRate, $maximumHeartRate);
 
         $xmlTrackPoints = $xml->Activities->Activity->Lap->Track->children();
         foreach ($xmlTrackPoints as $xmlTrackPoint) {
