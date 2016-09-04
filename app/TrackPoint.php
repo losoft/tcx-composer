@@ -18,6 +18,7 @@ class TrackPoint
     public $longitudeDegrees;
     public $altitudeMeters;
     public $sensorState;
+    public $speed;
 
     public function __construct($time,
                                 $duration,
@@ -26,7 +27,8 @@ class TrackPoint
                                 $latitudeDegrees,
                                 $longitudeDegrees,
                                 $altitudeMeters,
-                                $sensorState)
+                                $sensorState,
+                                $speed)
     {
         $this->time = $time;
         $this->duration = $duration;
@@ -36,5 +38,6 @@ class TrackPoint
         $this->longitudeDegrees = $longitudeDegrees;
         $this->altitudeMeters = $altitudeMeters;
         $this->sensorState = $sensorState;
+        $this->speed = $speed;
     }
 }

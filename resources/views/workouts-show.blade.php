@@ -38,20 +38,39 @@
         function drawDuration() {
             var dataTable = new google.visualization.DataTable();
             dataTable.addColumn('number', 'Duration');
-            dataTable.addColumn('number', 'Altitude');
-            dataTable.addColumn({type: 'string', role: 'tooltip', p: {'html': true}});
+            //dataTable.addColumn('number', 'Altitude');
+            //dataTable.addColumn({type: 'string', role: 'tooltip', p: {'html': true}});
             dataTable.addColumn('number', 'Heart Rate');
             dataTable.addColumn({type: 'string', role: 'tooltip', p: {'html': true}});
+            dataTable.addColumn('number', 'Speed');
+            dataTable.addColumn({type: 'string', role: 'tooltip', p: {'html': true}});
+            //dataTable.addColumn('number', 'Pace');
+            //dataTable.addColumn({type: 'string', role: 'tooltip', p: {'html': true}});
 
             dataTable.addRows([
                 <?php
                 foreach ($workout->trackPoints as $trackPoint) {
                     $hms = gmdate("H:i:s", $trackPoint->duration);
-                    $html = "<p><b>Durration:</b> $hms</p>" .
-                            "<p><b>Altitude:</b> $trackPoint->altitudeMeters</p>" .
-                            "<p><b>Heart Rate:</b> $trackPoint->heartRateBpm</p>";
-                    echo "[$trackPoint->duration, $trackPoint->altitudeMeters, ".
-                            "'$html', $trackPoint->heartRateBpm, '$html' ],";
+                    $distance = round($trackPoint->distanceMeters, 0);
+                    $speed_kmh = round(($trackPoint->speed * 18) / 5, 2);
+                    $pace = $speed_kmh == 0 ? 0 : 60 / $speed_kmh;
+                    $pace = $pace * 60;
+                    $pace_min = floor($pace / 60);
+                    $pace_sec = $pace % 60;
+                    $pace_sec = ($pace_sec > 9) ? $pace_sec : "0$pace_sec";
+                    $pace_mink = "$pace_min:$pace_sec";
+                    $html = "<span><b>Duration:</b> $hms</span><br/>" .
+                            "<span><b>Distance:</b> $distance</span><br/>" .
+                            //"<span><b>Altitude:</b> $trackPoint->altitudeMeters</span><br/>" .
+                            "<span><b>Heart Rate:</b> $trackPoint->heartRateBpm</span><br/>" .
+                            "<span><b>Speed:</b> $speed_kmh km/h</span><br/>" .
+                            "<span><b>Pace:</b> $pace_mink min/km</span><br/>";
+                    echo "[$trackPoint->duration, " .
+                            //"$trackPoint->altitudeMeters, '$html', " .
+                            "$trackPoint->heartRateBpm, '$html', " .
+                            "$speed_kmh, '$html', " .
+                            //"$trackPoint->pace, '$html' " .
+                            "],";
                 }
                 ?>
             ]);
@@ -72,6 +91,14 @@
                         }
                         ?>
                     ]
+                },
+                vAxes: {
+                    0: {title: 'Heart Rate'},
+                    1: {title: 'Speed'}
+                },
+                series: {
+                    0: {targetAxisIndex: 0},
+                    1: {targetAxisIndex: 1}
                 },
                 tooltip: {
                     isHtml: true

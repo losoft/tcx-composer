@@ -18,11 +18,10 @@ class WorkoutSummary
     public $calories;
     public $distance;
     public $speed;
-    public $pace;
     public $averageHeartRate;
     public $maximumHeartRate;
 
-    public function __construct($id, $name, $type, $startTime, $duration, $calories, $distance, $speed, $pace,
+    public function __construct($id, $name, $type, $startTime, $duration, $calories, $distance, $speed,
                                 $averageHeartRate, $maximumHeartRate)
     {
         $this->id = $id;
@@ -33,7 +32,6 @@ class WorkoutSummary
         $this->calories = $calories;
         $this->distance = $distance;
         $this->speed = $speed;
-        $this->pace = $pace;
         $this->averageHeartRate = $averageHeartRate;
         $this->maximumHeartRate = $maximumHeartRate;
     }

@@ -14,7 +14,7 @@ class WorkoutDetails extends WorkoutSummary
 {
     public $trackPoints;
 
-    public function __construct($id, $name, $type, $startTime, $duration, $calories, $distance, $speed, $pace,
+    public function __construct($id, $name, $type, $startTime, $duration, $calories, $distance, $speed,
                                 $averageHeartRate, $maximumHeartRate, $trackPoints = array())
     {
         $this->id = $id;
@@ -25,7 +25,6 @@ class WorkoutDetails extends WorkoutSummary
         $this->calories = $calories;
         $this->distance = $distance;
         $this->speed = $speed;
-        $this->pace = $pace;
         $this->averageHeartRate = $averageHeartRate;
         $this->maximumHeartRate = $maximumHeartRate;
         $this->trackPoints = $trackPoints;

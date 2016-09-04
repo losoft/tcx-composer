@@ -27,8 +27,8 @@
             <th class="text-right">Duration</th>
             <th class="text-right">Calories</th>
             <th class="text-right">Distance</th>
-            <th class="text-right">Speed</th>
-            <th class="text-right">Pace</th>
+            <th class="text-right">Speed (km/h)</th>
+            <th class="text-right">Pace (min/km)</th>
             <th class="text-right">Average Heart Rate</th>
             <th class="text-right">Maximum Heart Rate</th>
             </thead>
@@ -42,8 +42,8 @@
                     <td class="text-right">{{ gmdate("H:i:s", $workout->duration) }}</td>
                     <td class="text-right">{{ $workout->calories }}</td>
                     <td class="text-right">{{ round($workout->distance, 2) }} m</td>
-                    <td class="text-right">{{ $workout->speed }} km/h</td>
-                    <td class="text-right">{{ $workout->pace }} min/km</td>
+                    <td class="text-right">{{ $workout->speed }}</td>
+                    <td class="text-right"></td>
                     <td class="text-right">{{ $workout->averageHeartRate }}</td>
                     <td class="text-right">{{ $workout->maximumHeartRate }}</td>
                 </tr>

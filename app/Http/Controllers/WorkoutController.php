@@ -193,33 +193,42 @@ class WorkoutController extends Controller
     {
         $xml = SimpleXML_Load_String($workout->track);
         $type = (string)$xml->Activities->Activity['Sport'];
+        // FIXME: read start time from first track point
         $startTime = self::normalizeISO8601((string)$xml->Activities->Activity->Lap['StartTime']);
         $duration = (float)$xml->Activities->Activity->Lap->TotalTimeSeconds;
         $distance = (float)$xml->Activities->Activity->Lap->DistanceMeters;
-        // TODO: get the speed and pace from track data
+        // FIXME: get the max and average speed from track data
+        // FIXME: max and average speed to WorkoutDetails and WorkoutSummary
         $speed = 0;
-        $pace = 0;
         $averageHeartRate = (int)$xml->Activities->Activity->Lap->AverageHeartRateBpm->Value;
         $maximumHeartRate = (int)$xml->Activities->Activity->Lap->MaximumHeartRateBpm->Value;
         $calories = (int)$xml->Activities->Activity->Lap->Calories;
 
         $result = new WorkoutDetails($workout->id, $workout->name, $type, $startTime, $duration, $calories,
-            $distance, $speed, $pace, $averageHeartRate, $maximumHeartRate);
+            $distance, $speed, $averageHeartRate, $maximumHeartRate);
 
         $xmlTrackPoints = $xml->Activities->Activity->Lap->Track->children();
+        $totalDistance = 0;
+        $lastXmlTrackPoint = $xmlTrackPoints[0];
         foreach ($xmlTrackPoints as $xmlTrackPoint) {
-            $trackPoint = self::workoutTrackPoint($xmlTrackPoint, $startTime);
+            $trackPoint = self::workoutTrackPoint($lastXmlTrackPoint, $xmlTrackPoint, $totalDistance, $startTime);
+            $totalDistance = $trackPoint->distanceMeters;
+            $lastXmlTrackPoint = $xmlTrackPoint;
             $result->add($trackPoint);
         }
 
         return $result;
     }
 
-    private static function workoutTrackPoint($xmlTrackPoint, $startTime = null)
+    private static function workoutTrackPoint($lastXmlTrackPoint, $xmlTrackPoint, $totalDistance, $startTime)
     {
         $time = (string)$xmlTrackPoint->Time;
-        $duration = ($startTime == null) ? 0 : self::calculateDuration($startTime, $time);
-        $distanceMeters = (float)$xmlTrackPoint->DistanceMeters;
+        $duration = self::calculateDuration($startTime, $time);
+        $lastTime = (string)$lastXmlTrackPoint->Time;
+        $metersDifference = self::determineDistance($lastXmlTrackPoint, $xmlTrackPoint);
+        $distanceMeters = $totalDistance + $metersDifference;
+        $timeDifference = self::calculateDuration($lastTime, $time);
+        $speed = self::calculateSpeed($metersDifference, $timeDifference);
         $heartRateBpm = (int)$xmlTrackPoint->HeartRateBpm->Value;
         $latitudeDegrees = (float)$xmlTrackPoint->Position->LatitudeDegrees;
         $longitudeDegrees = (float)$xmlTrackPoint->Position->LongitudeDegrees;
@@ -227,7 +236,7 @@ class WorkoutController extends Controller
         $sensorState = (string)$xmlTrackPoint->SensorState;
 
         return new TrackPoint($time, $duration, $distanceMeters, $heartRateBpm, $latitudeDegrees,
-            $longitudeDegrees, $altitudeMeters, $sensorState);
+            $longitudeDegrees, $altitudeMeters, $sensorState, $speed);
     }
 
     const ISO8601U = 'Y-m-d\TH:i:s.uO';
@@ -252,10 +261,111 @@ class WorkoutController extends Controller
      * @param $endTime
      * @return int
      */
-    private static function calculateDuration($startTime, $endTime) {
+    private static function calculateDuration($startTime, $endTime)
+    {
+        if ($startTime == null || $endTime == null) {
+            return 0;
+        }
         $startTimeDate = DateTime::createFromFormat(DateTime::ISO8601, self::normalizeISO8601($startTime));
         $endTimeDate = DateTime::createFromFormat(DateTime::ISO8601, self::normalizeISO8601($endTime));
         $duration = $endTimeDate->getTimestamp() - $startTimeDate->getTimestamp();
         return $duration;
+    }
+
+    /**
+     * @param $time between two track points in seconds
+     * @param $distance between two track points in meters
+     * @return float
+     */
+    private static function calculateSpeed($distance, $time)
+    {
+        if ($distance == 0 || $time == 0) {
+            return 0;
+        }
+        return (float)($distance / $time);
+    }
+
+    private static function determineDistance($firstXmlTrackPoint, $secondXmlTrackPoint)
+    {
+        if ($firstXmlTrackPoint == null || $secondXmlTrackPoint == null) {
+            return (float)0;
+        }
+        if (empty($firstXmlTrackPoint->Position) || empty($secondXmlTrackPoint->Position)) {
+            return (float)$secondXmlTrackPoint->DistanceMeters - (float)$firstXmlTrackPoint->DistanceMeters;
+        }
+        $firstLatitudeDegrees = (float)$firstXmlTrackPoint->Position->LatitudeDegrees;
+        $firstLongitudeDegrees = (float)$firstXmlTrackPoint->Position->LongitudeDegrees;
+        $secondLatitudeDegrees = (float)$secondXmlTrackPoint->Position->LatitudeDegrees;
+        $secondLongitudeDegrees = (float)$secondXmlTrackPoint->Position->LongitudeDegrees;
+
+        return (float)self::calculateDistance($firstLatitudeDegrees, $firstLongitudeDegrees,
+            $secondLatitudeDegrees, $secondLongitudeDegrees);
+    }
+
+    private static function calculateDistance($firstLatitudeDegrees, $firstLongitudeDegrees,
+                                              $secondLatitudeDegrees, $secondLongitudeDegrees)
+    {
+        if ($firstLatitudeDegrees == null || $firstLongitudeDegrees == null
+            || $secondLatitudeDegrees == null || $secondLongitudeDegrees == null) {
+            return (float) 0;
+        }
+
+        return self::haversineGreatCircleDistance($firstLatitudeDegrees, $firstLongitudeDegrees,
+            $secondLatitudeDegrees, $secondLongitudeDegrees);
+    }
+
+    /**
+     * Calculates the great-circle distance between two points, with the Haversine formula.
+     * @see http://stackoverflow.com/questions/10053358/measuring-the-distance-between-two-coordinates-in-php
+     * @param float $latitudeFrom Latitude of start point in [deg decimal]
+     * @param float $longitudeFrom Longitude of start point in [deg decimal]
+     * @param float $latitudeTo Latitude of target point in [deg decimal]
+     * @param float $longitudeTo Longitude of target point in [deg decimal]
+     * @param float $earthRadius Mean earth radius in [m]
+     * @return float Distance between points in [m] (same as earthRadius)
+     */
+    private static function haversineGreatCircleDistance(
+        $latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000)
+    {
+        // convert from degrees to radians
+        $latFrom = deg2rad($latitudeFrom);
+        $lonFrom = deg2rad($longitudeFrom);
+        $latTo = deg2rad($latitudeTo);
+        $lonTo = deg2rad($longitudeTo);
+
+        $latDelta = $latTo - $latFrom;
+        $lonDelta = $lonTo - $lonFrom;
+
+        $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
+                cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+        return $angle * $earthRadius;
+    }
+
+    /**
+     * Calculates the great-circle distance between two points, with the Vincenty formula.
+     * @see http://stackoverflow.com/questions/10053358/measuring-the-distance-between-two-coordinates-in-php
+     * @param float $latitudeFrom Latitude of start point in [deg decimal]
+     * @param float $longitudeFrom Longitude of start point in [deg decimal]
+     * @param float $latitudeTo Latitude of target point in [deg decimal]
+     * @param float $longitudeTo Longitude of target point in [deg decimal]
+     * @param float $earthRadius Mean earth radius in [m]
+     * @return float Distance between points in [m] (same as earthRadius)
+     */
+    public static function vincentyGreatCircleDistance(
+        $latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000)
+    {
+        // convert from degrees to radians
+        $latFrom = deg2rad($latitudeFrom);
+        $lonFrom = deg2rad($longitudeFrom);
+        $latTo = deg2rad($latitudeTo);
+        $lonTo = deg2rad($longitudeTo);
+
+        $lonDelta = $lonTo - $lonFrom;
+        $a = pow(cos($latTo) * sin($lonDelta), 2) +
+            pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
+        $b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
+
+        $angle = atan2(sqrt($a), $b);
+        return $angle * $earthRadius;
     }
 }
